@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".view.MainActivity">
+
+    <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/back_gradient"
+            android:orientation="vertical">
+
+        <LinearLayout android:layout_width="fill_parent"
+                      android:layout_height="30pt"
+                      android:orientation="horizontal">
+
+
+            <LinearLayout android:layout_width="fill_parent"
+                          android:text="Start"
+                          android:layout_weight="3"
+                          android:layout_height="fill_parent"/>
+            <TextView android:layout_width="fill_parent"
+                      android:gravity="center"
+                      android:text="TCP Client"
+                      android:fontFamily="@font/crc55"
+                      android:textStyle="bold"
+                      android:textColor="@color/colorWhite"
+                      android:textSize="12pt"
+                      android:layout_weight="2"
+                      android:layout_height="fill_parent">
+
+            </TextView>
+            <Button android:layout_width="fill_parent"
+                    android:text="Start"
+                    android:layout_weight="3"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="10pt"
+                    android:gravity="center"
+                    android:layout_margin="5pt"
+                    android:id="@+id/start_btn"
+                    android:background="@drawable/round_button_green"
+                    android:layout_height="fill_parent"/>
+            <Button android:layout_width="fill_parent"
+                    android:text="Stop"
+                    android:layout_weight="3"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="10pt"
+                    android:gravity="center"
+                    android:layout_margin="5pt"
+                    android:visibility="gone"
+                    android:id="@+id/stop_btn"
+                    android:background="@drawable/round_button_red"
+                    android:layout_height="fill_parent"/>
+
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="fill_parent"
+                      android:layout_height="fill_parent"
+                      android:background="@drawable/round_corner"
+                      android:orientation="vertical">
+
+            <ScrollView android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/map_scroll">
+
+                <LinearLayout android:layout_width="fill_parent"
+                              android:layout_height="fill_parent"
+                              android:orientation="vertical">
+
+
+                    <LinearLayout android:layout_width="fill_parent"
+                                  android:layout_height="wrap_content"
+                                  android:layout_margin="7pt"
+                                  android:orientation="vertical">
+                        <android.support.v7.widget.CardView
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                card_view:cardCornerRadius="8dp"
+                                card_view:cardElevation="8dp">
+                            <LinearLayout android:layout_width="fill_parent"
+                                          android:layout_height="wrap_content"
+                                          android:layout_margin="10pt"
+                                          android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content"
+                                          android:text="Select Format"
+                                          android:textStyle="bold"
+                                          android:textColor="@color/colorIcon"
+                                          android:fontFamily="@font/crc55"
+                                          android:textSize="13pt"
+                                          android:gravity="center_vertical"
+                                          android:layout_height="wrap_content"/>
+
+                                <RadioGroup
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal"
+                                        android:id="@+id/radioGroup_format">
+                                    <RadioButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Dims"
+                                            android:fontFamily="@font/crc55"
+                                            android:textSize="10pt"
+                                            android:gravity="center_vertical"
+                                            android:id="@+id/radioButton_dims"/>
+                                    <RadioButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/crc55"
+                                            android:textSize="10pt"
+                                            android:gravity="center_vertical"
+                                            android:layout_marginLeft="5pt"
+                                            android:id="@+id/radioButton_uttarakhand"
+                                            android:text="Uttarakhand"/>
+
+
+                                </RadioGroup>
+
+                                <TextView android:layout_width="wrap_content"
+                                          android:text="Server Configuration"
+                                          android:textStyle="bold"
+                                          android:textColor="@color/colorIcon"
+                                          android:fontFamily="@font/crc55"
+                                          android:textSize="13pt"
+                                          android:layout_marginTop="10pt"
+                                          android:gravity="center_vertical"
+                                          android:layout_height="wrap_content"/>
+                                <LinearLayout android:layout_width="fill_parent"
+                                              android:orientation="horizontal"
+                                              android:layout_height="wrap_content">
+
+                                    <android.support.design.widget.TextInputLayout
+                                            android:layout_width="fill_parent"
+                                            android:layout_weight="1"
+                                            android:layout_height="wrap_content"
+                                            android:theme="@style/TextLabel">
+                                        <EditText
+                                                android:id="@+id/ipadress_edt"
+                                                android:layout_width="fill_parent"
+                                                android:textSize="10pt"
+                                                android:hint="IP address"
+                                                android:inputType="phone"
+                                                android:layout_marginRight="3pt"
+
+                                                android:text="13.127.103.21"
+
+                                                android:digits="0123456789."
+                                                android:imeOptions="actionNext"
+                                                android:fontFamily="@font/crc55"
+
+                                                android:layout_height="wrap_content"/>
+                                    </android.support.design.widget.TextInputLayout>
+                                    <android.support.design.widget.TextInputLayout
+                                            android:layout_width="fill_parent"
+                                            android:layout_weight="2"
+                                            android:layout_marginLeft="3pt"
+                                            android:layout_height="wrap_content"
+                                            android:theme="@style/TextLabel">
+                                        <EditText android:layout_width="fill_parent"
+                                                  android:textSize="10pt"
+                                                  android:hint="Port"
+                                                  android:digits="0123456789"
+                                                  android:inputType="phone"
+                                                  android:text="9999"
+
+                                                  android:imeOptions="actionNext"
+                                                  android:fontFamily="@font/crc55"
+                                                  android:layout_height="wrap_content"
+                                                  android:id="@+id/port_edt"/>
+                                    </android.support.design.widget.TextInputLayout>
+
+
+                                </LinearLayout>
+                                <LinearLayout android:layout_width="fill_parent"
+                                              android:layout_height="wrap_content"
+                                              android:layout_marginTop="8pt"
+                                              android:orientation="horizontal">
+
+
+                                    <android.support.design.widget.TextInputLayout
+                                            android:layout_width="fill_parent"
+                                            android:layout_weight="1"
+                                            android:layout_marginRight="3pt"
+                                            android:layout_height="wrap_content"
+                                            android:theme="@style/TextLabel">
+                                        <EditText android:layout_width="fill_parent"
+                                                  android:hint="Vendor Id"
+                                                  android:inputType="textCapCharacters"
+                                                  android:imeOptions="actionNext"
+                                                  android:textSize="10pt"
+                                                  android:text="AMOLWA"
+                                                  android:fontFamily="@font/crc55"
+                                                  android:maxLength="6"
+                                                  android:layout_height="wrap_content"
+                                                  android:id="@+id/vendorid_edt"/>
+                                    </android.support.design.widget.TextInputLayout>
+                                    <android.support.design.widget.TextInputLayout
+                                            android:layout_width="fill_parent"
+                                            android:layout_weight="1"
+                                            android:layout_marginLeft="3pt"
+                                            android:layout_height="wrap_content"
+                                            android:theme="@style/TextLabel">
+                                        <EditText android:layout_width="fill_parent"
+                                                  android:hint="IMEI"
+                                                  android:inputType="phone"
+                                                  android:digits="0123456789"
+                                                  android:imeOptions="actionDone"
+                                                  android:textSize="10pt"
+                                                  android:fontFamily="@font/crc55"
+
+                                                  android:text="869867035310178"
+                                                  android:layout_height="wrap_content"
+                                                  android:id="@+id/imei_edt"/>
+                                    </android.support.design.widget.TextInputLayout>
+
+                                    <Button android:layout_width="fill_parent"
+                                            android:layout_weight="2"
+                                            android:text="Send"
+                                            android:textAllCaps="false"
+                                            android:textSize="10pt"
+                                            android:fontFamily="@font/crc55"
+                                            android:background="@drawable/round_button"
+                                            android:textColor="@color/colorWhite"
+                                            android:id="@+id/connect_btn"
+                                            android:visibility="gone"
+                                            android:layout_height="wrap_content"/>
+                                </LinearLayout>
+
+                            </LinearLayout>
+                        </android.support.v7.widget.CardView>
+                        <android.support.v7.widget.CardView
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                card_view:cardCornerRadius="8dp"
+                                card_view:cardElevation="8dp">
+                            <LinearLayout android:layout_width="fill_parent"
+                                          android:layout_height="wrap_content"
+                                          android:layout_margin="10pt"
+                                          android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content"
+                                          android:text="Lat Lng Type"
+                                          android:textStyle="bold"
+                                          android:textColor="@color/colorIcon"
+                                          android:fontFamily="@font/crc55"
+                                          android:textSize="13pt"
+                                          android:gravity="center_vertical"
+                                          android:layout_height="wrap_content"/>
+
+                                <RadioGroup
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+
+                                        android:id="@+id/radioGroup_latlng">
+                                    <RadioButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Current Location"
+                                            android:fontFamily="@font/crc55"
+
+                                            android:textSize="10pt"
+                                            android:id="@+id/radioButton_currlocation"/>
+                                    <RadioButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/crc55"
+                                            android:textSize="10pt"
+                                            android:layout_marginTop="3pt"
+                                            android:id="@+id/radioButton_drag_drop"
+                                            android:text="Drag Drop Location"/>
+                                    <RadioButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Manual Location"
+                                            android:fontFamily="@font/crc55"
+                                            android:textSize="10pt"
+                                            android:layout_marginTop="3pt"
+                                            android:id="@+id/radioButton_manuallocation"/>
+
+                                </RadioGroup>
+
+                                <LinearLayout android:layout_width="fill_parent"
+                                              android:layout_height="25pt"
+                                              android:id="@+id/lat_lng_li"
+                                              android:visibility="gone"
+                                              android:orientation="horizontal">
+
+                                    <EditText android:layout_width="fill_parent"
+                                              android:hint="Latitude"
+                                              android:inputType="phone"
+                                              android:digits="0123456789."
+                                              android:imeOptions="actionDone"
+                                              android:textSize="10pt"
+                                              android:layout_weight="1"
+                                              android:paddingLeft="5pt"
+                                              android:text="18.520430"
+                                              android:maxLength="9"
+                                              android:fontFamily="@font/crc55"
+                                              android:layout_marginTop="5pt"
+                                              android:layout_marginRight="3pt"
+                                              android:background="@drawable/border_edt"
+                                              android:layout_height="fill_parent"
+                                              android:id="@+id/manual_lat_edt"/>
+                                    <EditText android:layout_width="fill_parent"
+                                              android:hint="Longitude"
+                                              android:inputType="phone"
+                                              android:text="73.856743"
+                                              android:digits="0123456789."
+                                              android:imeOptions="actionDone"
+                                              android:textSize="10pt"
+                                              android:layout_weight="1"
+                                              android:paddingLeft="5pt"
+                                              android:maxLength="9"
+                                              android:fontFamily="@font/crc55"
+                                              android:layout_marginTop="5pt"
+                                              android:layout_marginLeft="3pt"
+                                              android:background="@drawable/border_edt"
+                                              android:layout_height="fill_parent"
+                                              android:id="@+id/manual_lng_edt"/>
+                                </LinearLayout>
+
+                                <TextView android:layout_width="wrap_content"
+                                          android:text="Select Packet"
+                                          android:textStyle="bold"
+                                          android:layout_marginTop="10pt"
+                                          android:textColor="@color/colorIcon"
+                                          android:fontFamily="@font/crc55"
+                                          android:textSize="13pt"
+                                          android:layout_height="wrap_content"/>
+                                <LinearLayout android:layout_width="fill_parent"
+                                              android:layout_height="wrap_content"
+                                              android:orientation="vertical">
+
+
+                                    <RadioGroup
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="wrap_content"
+                                            android:orientation="vertical"
+                                            android:layout_weight="1"
+                                            android:id="@+id/radioGroup">
+
+                                        <RadioButton
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="Login"
+                                                android:fontFamily="@font/crc55"
+                                                android:textSize="10pt"
+                                                android:layout_marginTop="3pt"
+
+                                                android:id="@+id/radioButton_login"/>
+                                        <RadioButton
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:fontFamily="@font/crc55"
+                                                android:textSize="10pt"
+                                                android:checked="true"
+                                                android:id="@+id/radioButton_normal"
+                                                android:layout_marginTop="3pt"
+
+                                                android:text="Normal"/>
+                                       <!-- <RadioButton
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:fontFamily="@font/crc55"
+                                                android:textSize="10pt"
+                                                android:layout_marginTop="3pt"
+
+                                                android:id="@+id/radioButton_health"
+                                                android:text="Health"/>-->
+                                        <RadioButton
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:fontFamily="@font/crc55"
+                                                android:textSize="10pt"
+
+                                                android:layout_marginTop="3pt"
+
+                                                android:id="@+id/radioButton_alarm"
+                                                android:text="Alarm"/>
+                                        <RadioButton
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:fontFamily="@font/crc55"
+                                                android:textSize="10pt"
+                                                android:layout_marginTop="3pt"
+                                                android:visibility="gone"
+
+                                                android:id="@+id/radioButton_emergency"
+                                                android:text="Emergency"/>
+
+                                    </RadioGroup>
+                                    <Button android:layout_width="fill_parent"
+                                            android:layout_weight="4"
+                                            android:id="@+id/emergency_btn"
+                                            android:text="Start Emergency"
+                                            android:textSize="7pt"
+                                            android:layout_marginTop="3pt"
+                                            android:textAllCaps="false"
+                                            android:textColor="@color/colorWhite"
+                                            android:background="@android:color/holo_green_dark"
+                                            android:layout_height="20pt"/>
+                                </LinearLayout>
+                                <View android:layout_width="fill_parent"
+                                      android:layout_height="3pt"/>
+                            </LinearLayout>
+                        </android.support.v7.widget.CardView>
+                    </LinearLayout>
+
+
+                    <LinearLayout android:layout_width="fill_parent"
+                                  android:layout_height="wrap_content"
+                                  android:orientation="vertical">
+                        <TextView android:layout_width="fill_parent"
+                                  android:text="Latitude,Longitude"
+                                  android:gravity="center"
+                                  android:fontFamily="@font/crc55"
+
+                                  android:textColor="@color/colorWhite"
+                                  android:textSize="10pt"
+                                  android:background="@color/colorGreen"
+
+                                  android:id="@+id/lat_lng_tv"
+                                  android:layout_height="25pt"/>
+
+                        <LinearLayout android:layout_width="fill_parent"
+
+                                      android:background="@color/colorIcon"
+                                      android:layout_height="200pt">
+                            <fragment
+
+                                    android:layout_width="fill_parent"
+                                    android:layout_height="fill_parent"
+                                    android:id="@+id/map"
+                                    tools:context=".view.MapsActivity"
+                                    android:name="com.example.packetsender.other.ScrollGoogleMap"/>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+
+                    <Button android:layout_width="fill_parent"
+
+                            android:text="Send"
+                            android:textAllCaps="false"
+                            android:textSize="10pt"
+                            android:fontFamily="@font/crc55"
+                            android:layout_marginTop="8pt"
+
+                            android:visibility="gone"
+                            android:background="@drawable/round_button"
+                            android:textColor="@color/colorWhite"
+                            android:layout_height="30pt"/>
+
+                    <View android:layout_width="fill_parent"
+                          android:layout_height="10pt"/>
+
+
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>
