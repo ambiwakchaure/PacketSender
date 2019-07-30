@@ -1,7 +1,6 @@
 package com.example.packetsender.view
 
 import android.Manifest
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,35 +11,31 @@ import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.os.ResultReceiver
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.ProgressBar
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import com.example.packetsender.R
+import com.example.packetsender.network.NetworkOperation
+import com.example.packetsender.network.ReturnResponse
 import com.example.packetsender.other.*
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.RuntimeExecutionException
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.lang.Exception
@@ -58,7 +53,7 @@ class MainActivity : AppCompatActivity(),
     val REQUEST_CHECK_STATE = 12300 // any suitable ID
 
     companion object {
-        var socket: Socket? = null
+        //var socket: Socket? = null
         var server_address: String? = null
         var format_type: String? = null
         var server_port: Int = 0
@@ -67,12 +62,14 @@ class MainActivity : AppCompatActivity(),
         var START_STOP_CNT: Int = 0
         var message = ""
         var imei = ""
-        var packetType = ""
-        var packetTypeForEmergency = ""
+        // var packetType = ""
+        var packetTypeSelection = ""
+       // var packetTypeForEmergency = ""
         //lateinit var progressDialog: ProgressDialog
         lateinit var context: Context
         lateinit var mHandlerHealthPacket: Handler
         lateinit var mHandlerNormalPacket: Handler
+        lateinit var mHandlerEmergencyPacket: Handler
 
 
     }
@@ -93,7 +90,6 @@ class MainActivity : AppCompatActivity(),
     var latLongType = ""
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -110,6 +106,7 @@ class MainActivity : AppCompatActivity(),
         //handler for packet sending
         mHandlerHealthPacket = Handler()
         mHandlerNormalPacket = Handler()
+        mHandlerEmergencyPacket = Handler()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as ScrollGoogleMap
         mapFragment.getMapAsync(this)
@@ -207,104 +204,95 @@ class MainActivity : AppCompatActivity(),
 
 
     //for Health Packet handler
-    fun startHealthPacketHandler(){
+    fun startHealthPacketHandler() {
         mIsRunningHealthPacket = true
         mStatusCheckerHealthPacket.run()
     }
+
     internal var mIsRunningHealthPacket: Boolean = false
-    internal var mStatusCheckerHealthPacket : Runnable = object : Runnable{
-        override fun run(){
-            if(!mIsRunningHealthPacket){
+    internal var mStatusCheckerHealthPacket: Runnable = object : Runnable {
+        override fun run() {
+            if (!mIsRunningHealthPacket) {
                 return//stop when told to stop
             }
             //call every 10 sec
-            packetType = "health"
-            //T.e("HANDLER_CALL : "+packetType)
             T.e("HANDLER_CALL : health handler running...")
-            sendDataToServer(packetType)
+            sendDataToServer("health")
             //do somethind here
             //T.e("HANDLER_CALL : "+"Running...")
-            mHandlerHealthPacket.postDelayed(this,Constants.HEALTH_PACKET_DELAY)//2 min
+            mHandlerHealthPacket.postDelayed(this, Constants.HEALTH_PACKET_DELAY)//2 min
         }
     }
-    fun stopHealthPacketHandler(){
+
+    fun stopHealthPacketHandler() {
         mIsRunningHealthPacket = false
         mHandlerHealthPacket.removeCallbacks(mStatusCheckerHealthPacket)
     }
+
     //for normal packet handler
-    fun startNormalPacketHandler(){
+    fun startNormalPacketHandler() {
         mIsRunningNormalPacket = true
         mStatusCheckerNormalPacket.run()
     }
+
     internal var mIsRunningNormalPacket: Boolean = false
-    internal var mStatusCheckerNormalPacket : Runnable = object : Runnable{
+    internal var mStatusCheckerNormalPacket: Runnable = object : Runnable {
         override fun run() {
-            if(!mIsRunningNormalPacket){
+            if (!mIsRunningNormalPacket) {
                 return//stop when told to stop
             }
-
-            if(START_STOP_CNT == 0 && packetTypeForEmergency.equals("")){
-
-                if(mIsRunningNormalPacket){
-                    stopNormalPacketHandler()
-                }
-                if(mIsRunningHealthPacket){
-                    stopHealthPacketHandler()
-                }
-            }
-            if(packetTypeForEmergency.equals("emergency"))
-            {
-                //call every 10 sec
-                packetType = "emergency";
-                packetTypeForEmergency = "emergency"
-               // T.e("HANDLER_CALL : "+packetType)
-                T.e("HANDLER_CALL : emergency handler running...")
-                sendDataToServer(packetType)
-            }
-            else
-            {
-                if(packetType.equals("emergency"))
-                {
-                    //call every 10 sec
-                    packetType = "emergency";
-                    packetTypeForEmergency = "emergency"
-                    //T.e("HANDLER_CALL : "+packetType)
-                    T.e("HANDLER_CALL : emergency handler running...")
-                    sendDataToServer(packetType)
-                }
-                else
-                {
-                    //call every 10 sec
-                    //packetType = "normal";
-                   // T.e("HANDLER_CALL : "+packetType)
-                    T.e("HANDLER_CALL : normal handler running...")
-                    sendDataToServer(packetType)
-                    //sendDataToServer(packetTypeFlag)
-                }
-            }
-            mHandlerNormalPacket.postDelayed(this,Constants.NORMAL_PACKET_DELAY)//10 sec
+            T.e("HANDLER_CALL : " + packetTypeSelection + " handler running...")
+            sendDataToServer(packetTypeSelection)
+            mHandlerNormalPacket.postDelayed(this, Constants.NORMAL_PACKET_DELAY)//10 sec
         }
     }
-    fun stopNormalPacketHandler(){
+
+    fun stopNormalPacketHandler() {
         mIsRunningNormalPacket = false
         mHandlerNormalPacket.removeCallbacks(mStatusCheckerNormalPacket)
     }
-    override fun onDestroy() {
-        super.onDestroy()
-        if(mIsRunningHealthPacket){
-            stopHealthPacketHandler()
-        }
-        if(mIsRunningNormalPacket){
-            stopNormalPacketHandler()
+
+    //for emergency packet handler
+    fun startEmergencyPacketHandler() {
+        mIsRunningEmergencyPacket = true
+        mStatusCheckerEmergencyPacket.run()
+    }
+
+    internal var mIsRunningEmergencyPacket: Boolean = false
+    internal var mStatusCheckerEmergencyPacket: Runnable = object : Runnable {
+        override fun run() {
+            if (!mIsRunningEmergencyPacket) {
+                return//stop when told to stop
+            }
+            T.e("HANDLER_CALL : emergency handler running...")
+            sendDataToServer("emergency")
+            mHandlerEmergencyPacket.postDelayed(this, Constants.NORMAL_PACKET_DELAY)//10 sec
         }
     }
+
+    fun stopEmergencyPacketHandler() {
+        mIsRunningEmergencyPacket = false
+        mHandlerEmergencyPacket.removeCallbacks(mStatusCheckerEmergencyPacket)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mIsRunningHealthPacket) {
+            stopHealthPacketHandler()
+        }
+        if (mIsRunningNormalPacket) {
+            stopNormalPacketHandler()
+        }
+        if (mIsRunningEmergencyPacket) {
+            stopEmergencyPacketHandler()
+        }
+    }
+
+
     private fun setClickListner() {
-
         emergency_btn.setOnClickListener {
-
-
             //handle state changed and colors of emergency button
-            if(EMERGENCY_CNT == 0)
+            if (EMERGENCY_CNT == 0)
             {
                 if (T.isNetworkAvailable())
                 {
@@ -312,7 +300,6 @@ class MainActivity : AppCompatActivity(),
                     emergency_btn.setText("Stop Emergency")
                     emergency_btn.setBackgroundColor(Color.parseColor("#ff0000"))
                     //send health packet
-                    packetType = "emergency"
                     validateFields("emergency")//emergency
                 }
                 else
@@ -322,11 +309,12 @@ class MainActivity : AppCompatActivity(),
             }
             else
             {
-                if(mIsRunningNormalPacket){
+                if (mIsRunningEmergencyPacket)
+                {
                     emergency_btn.setText("Start Emergency")
                     emergency_btn.setBackgroundColor(Color.parseColor("#339933"))
                     EMERGENCY_CNT = 0
-                    stopNormalPacketHandler()
+                    stopEmergencyPacketHandler()
                 }
             }
 
@@ -342,11 +330,11 @@ class MainActivity : AppCompatActivity(),
         }
         stop_btn.setOnClickListener {
 
-            if(mIsRunningHealthPacket){
+            if (mIsRunningHealthPacket) {
                 T.e("HANDLER_STOP : health handler")
                 stopHealthPacketHandler()
             }
-            if(mIsRunningNormalPacket){
+            if (mIsRunningNormalPacket) {
                 T.e("HANDLER_STOP : normal handler")
                 stopNormalPacketHandler()
             }
@@ -376,16 +364,16 @@ class MainActivity : AppCompatActivity(),
             }
 
         })
-        packetType = "normal"
+        packetTypeSelection = "normal"
         radioGroup.setOnCheckedChangeListener(object : RadioGroup.OnCheckedChangeListener {
             override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
 
                 if (R.id.radioButton_login == checkedId) {
-                    packetType = "login"
+                    packetTypeSelection = "login"
                 } else if (R.id.radioButton_normal == checkedId) {
-                    packetType = "normal"
-                }  else if (R.id.radioButton_alarm == checkedId) {
-                    packetType = "alarm"
+                    packetTypeSelection = "normal"
+                } else if (R.id.radioButton_alarm == checkedId) {
+                    packetTypeSelection = "alarm"
                 }
             }
 
@@ -400,7 +388,7 @@ class MainActivity : AppCompatActivity(),
                 } else if (R.id.radioButton_drag_drop == checkedId) {
                     latLongType = "drag_drop"
                     lat_lng_li.setVisibility(View.GONE);
-                }else if (R.id.radioButton_manuallocation == checkedId) {
+                } else if (R.id.radioButton_manuallocation == checkedId) {
                     latLongType = "manual"
                     lat_lng_li.setVisibility(View.VISIBLE);
                 }
@@ -408,7 +396,7 @@ class MainActivity : AppCompatActivity(),
         })
     }
 
-    private fun validateFields(packetTypeFlag : String) {
+    private fun validateFields(packetTypeFlag: String) {
 
         //check format types empty
         if (!T.validateNA(main_layout, format_type!!, "Select format types")) {
@@ -430,21 +418,15 @@ class MainActivity : AppCompatActivity(),
         if (!T.validateNA(main_layout, latLongType!!, "Select lat lng type")) {
             return
         }
-        if (latLongType.equals("drag_drop"))
-        {
-            if (drag_droplat.equals("NA") || drag_droplng.equals("NA"))
-            {
+        if (latLongType.equals("drag_drop")) {
+            if (drag_droplat.equals("NA") || drag_droplng.equals("NA")) {
                 T.s(main_layout, "Please tap on map to get manual lat long")
-            }
-            else
-            {
+            } else {
 
                 //send packet
                 checkIfPacketEmergency(packetTypeFlag)
             }
-        }
-        else if(latLongType.equals("manual"))
-        {
+        } else if (latLongType.equals("manual")) {
             //check manual lat long empty
             if (!T.validateEditext(main_layout, manual_lat_edt, "Enter manual latitude")) {
                 return
@@ -457,31 +439,37 @@ class MainActivity : AppCompatActivity(),
 
             //send packet
             checkIfPacketEmergency(packetTypeFlag)
-        }
-        else
-        {
+        } else {
             //send packet
             checkIfPacketEmergency(packetTypeFlag)
         }
     }
-    fun checkIfPacketEmergency(packetTypeFlag : String){
 
-        if(packetTypeFlag.equals("emergency"))
+    fun checkIfPacketEmergency(packetTypeFlag: String) {
+
+        if (packetTypeFlag.equals("emergency"))
         {
-            //stop all previous packet sending like health and normal
+
             CNT = 0
-            packetTypeForEmergency = "emergency"
+            //packetTypeForEmergency = "emergency"
             start_btn.setVisibility(View.VISIBLE)
             stop_btn.setVisibility(View.GONE)
-            if(mIsRunningHealthPacket){
+
+            //stop all previous packet sending like health and normal
+            //stop health packet handler
+            if (mIsRunningHealthPacket) {
                 stopHealthPacketHandler()
             }
-            if(mIsRunningNormalPacket){
+            //stop normal packet handler
+            if (mIsRunningNormalPacket) {
                 stopNormalPacketHandler()
             }
+            //stop emergency packet handler
+            if (mIsRunningEmergencyPacket) {
+                stopEmergencyPacketHandler()
+            }
             //send emergency packet
-            packetType = packetTypeFlag
-            startNormalPacketHandler()
+            startEmergencyPacketHandler()
         }
         else
         {
@@ -491,22 +479,25 @@ class MainActivity : AppCompatActivity(),
             EMERGENCY_CNT = 0
 
             CNT = 0
-            packetTypeForEmergency = ""
+            //packetTypeForEmergency = ""
             start_btn.setVisibility(View.GONE)
             stop_btn.setVisibility(View.VISIBLE)
-            if(mIsRunningHealthPacket){
+            if (mIsRunningHealthPacket) {
                 stopHealthPacketHandler()
             }
-            if(mIsRunningNormalPacket){
+            if (mIsRunningNormalPacket) {
                 stopNormalPacketHandler()
             }
+            if (mIsRunningEmergencyPacket) {
+                stopEmergencyPacketHandler()
+            }
             START_STOP_CNT = 1
-            packetType = packetTypeFlag
             startHealthPacketHandler()
         }
     }
+
     @Synchronized
-    fun sendDataToServer(packetTypeFlag : String) {
+    fun sendDataToServer(packetTypeFlag: String) {
         //get current date time minus 5.30 hr with this
         var timeStampArray = T.getSystemDateTime()!!.split(" ")
         var dateArray = timeStampArray.get(0).split("-")
@@ -517,7 +508,7 @@ class MainActivity : AppCompatActivity(),
             ) + "," + timeArray.get(2)
 
         //check packet type
-        if(packetTypeFlag.equals("emergency")){
+        if (packetTypeFlag.equals("emergency")) {
 
             var vendor_id = vendorid_edt.text.toString().trim()
             server_address = ipadress_edt.text.toString()
@@ -525,19 +516,17 @@ class MainActivity : AppCompatActivity(),
             server_port = portt.toInt()
             imei = imei_edt.text.toString()
 
-            if(format_type.equals("dims"))
-            {
-                message = "\$,EPB,EMR," + imei + ",NM," + dateTimeString + ",A,0" + lat + ",N,0" + lng + ",E,0570.9,000.4,000.00,G,0000000000,0000000000000,a06c5e78,*"
-            }
-            else if(format_type.equals("uttarakhand"))
-            {
-                message = "\$EPB," + vendor_id + ",EMR," + imei + ",NM,11072019095127,A,030.104912,N,078.302765,E,0357.9,000.4,000.00,G,0000000000,0000000000000*a547"
-            }
-            else
-            {
+            if (format_type.equals("dims")) {
+                message =
+                    "\$,EPB,EMR," + imei + ",NM," + dateTimeString + ",A,0" + lat + ",N,0" + lng + ",E,0570.9,000.4,000.00,G,0000000000,0000000000000,a06c5e78,*"
+            } else if (format_type.equals("uttarakhand")) {
+                message =
+                    "\$EPB," + vendor_id + ",EMR," + imei + ",NM,11072019095127,A,030.104912,N,078.302765,E,0357.9,000.4,000.00,G,0000000000,0000000000000*a547"
+            } else {
                 message = "emergency packet not found"
             }
-            LongOperation(this).execute()
+            //send health packet
+            sendRequest(packetTypeFlag,server_address!!,server_port,message)
         }
         else
         {
@@ -546,6 +535,7 @@ class MainActivity : AppCompatActivity(),
             var portt = port_edt.text.toString()
             server_port = portt.toInt()
             imei = imei_edt.text.toString()
+
             //save ip and port
             MyApplication.editor.putString(Constants.SERVER_ADDRESS, server_address).commit()
             MyApplication.editor.putString(Constants.SERVER_PORT, "" + server_port).commit()
@@ -563,13 +553,10 @@ class MainActivity : AppCompatActivity(),
                     lng = currentlng
                 }
 
-            }
-            else if (latLongType.equals("manual")){
+            } else if (latLongType.equals("manual")) {
                 lat = manuallat
                 lng = manuallng
-            }
-            else
-            {
+            } else {
                 if (drag_droplat.length >= 10) {
                     lat = drag_droplat.substring(0, 9)
                 } else {
@@ -583,164 +570,80 @@ class MainActivity : AppCompatActivity(),
 
             }
             var vendor_id = vendorid_edt.text.toString().trim()
-
             if (packetTypeFlag.equals("login"))//login
             {
                 message = "$,01," + vendor_id + ",0.0.1," + imei + ",MH12AB1234,*"
-            }
-            else if (packetTypeFlag.equals("normal"))//normal
+            } else if (packetTypeFlag.equals("normal"))//normal
             {
                 message =
                     "$,03," + vendor_id + ",0.0.1,TA,16,L," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,010.4,354.90,07,0571.7,01.90,01.00,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,274d,6301,-056,2a27,62fc,-063,36a8,62f8,-066,2a29,62fc,-070,1000,00,000042,9d20b00f,*"
-            }
-            else if (packetTypeFlag.equals("health"))//health
+            } else if (packetTypeFlag.equals("health"))//health
             {
                 message = "$,02," + vendor_id + ",0.0.1," + imei + ",100,30,00.0,00005,00600,0000,00,00.2,00.0,*"
-            }
-            else if (packetTypeFlag.equals("alarm"))//alarm
+            } else if (packetTypeFlag.equals("alarm"))//alarm
             {
                 message =
                     "$,04," + vendor_id + ",0.0.1,IN,07,L," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,000.4,000.00,07,0570.4,02.00,01.10,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,2a27,62fc,-059,2a29,62fc,-064,2851,62f8,-074,274d,6301,-074,1000,01,000034,a236dd7b,*"
             }
 
-            LongOperation(this).execute()
-
+            //send normal, alram,login
+            sendRequest(packetTypeFlag,server_address!!,server_port,message)
         }
-
     }
 
-    class LongOperation(context: MainActivity) : AsyncTask<String, Void, String>() {
+    @Synchronized
+    fun sendRequest(packetTypeFlag : String,server_address : String,server_port : Int,message : String){
+        NetworkOperation(object : ReturnResponse {
+            override fun onPostExecute(message: String) {
 
-        var context: MainActivity
-        init {
-            this.context = context
-        }
-        override fun onPreExecute() {
-
-
-           /* progressDialog = ProgressDialog(context)
-            progressDialog.setMessage("Sending, please wait...")
-            progressDialog.setCancelable(false)
-            progressDialog.show()*/
-
-        }
-
-        var str: String? = "waiting"
-        override fun doInBackground(vararg params: String?): String {
-
-            var address = InetSocketAddress(server_address, server_port)
-            socket = Socket()
-            var br: BufferedReader? = null
-            try
-            {
-                socket!!.connect(address, 6000)
-                socket!!.setSoTimeout(6000)
-                var out = socket!!.getOutputStream()
-                var output = PrintWriter(out)
-                output.print(message)
-                output.flush()
-                br = BufferedReader(InputStreamReader(socket!!.getInputStream()))
-
-                str = F.returnStringData(br)
-                if (str != null) {
-                    //T.e("HANDLER_CALL : "+"trying to print what was just read : "+str)
-                    //Log.d("test", "trying to print what was just read")
-                    println(str)
+                if (message.equals("normal")) {
+                    T.e("PACKET_SENT : normal")
+                    //progressDialog.dismiss()
+                    T.t("Normal packet sent successfully")
+                } else if (message.equals("login")) {
+                    T.e("PACKET_SENT : login")
+                    //progressDialog.dismiss()
+                    T.t("Login packet sent successfully")
+                }else if (message.equals("emergency")) {
+                    T.e("PACKET_SENT : emergency")
+                    //progressDialog.dismiss()
+                    T.t("Emergency packet sent successfully")
+                } else if (message.equals("alarm")) {
+                    T.e("PACKET_SENT : alarm")
+                    //progressDialog.dismiss()
+                    T.t("Alarm packet sent successfully")
+                } else if (message.equals("health")) {
+                    T.e("PACKET_SENT : health")
+                    //progressDialog.dismiss()
+                    T.t("Health packet sent successfully")
+                    if (CNT == 0) {
+                        CNT = 1
+                        //wait for 15 sec and send normal packet
+                        fifteenMinDelayHere()
+                    }
+                } else {
+                    T.e("PACKET_SENT : " + message)
+                    //progressDialog.dismiss()
+                    T.t(message)
                 }
-                output.close()
-                br!!.close()
-                socket!!.close()
-
-            }
-            catch (e: Exception)
-            {
-                //T.e("HANDLER_CALL : packetType: "+packetType)
-                packetType = "Failed to connect to "+server_address+":"+ server_port+" - Network is unreachable"
-                T.e("HANDLER_CALL : "+"Exception : LongOperation() : "+e)
-                //T.e("" + e)
-            }
-            return str!!
-
-        }
-
-        override fun onPostExecute(result: String?) {
-
-
-            T.e("HANDLER_CNT : "+CNT)
-
-            if(CNT == 0){
-                CNT = 1
-
-                if(!packetTypeForEmergency.equals("emergency"))
-                {
-                    //wait for 15 sec and send normal packet
-                    context.fifteenMinDelayHere()
-                }
-
-
-            }
-            if(packetType.equals("normal"))
-            {
-                T.e("PACKET_SENT : normal")
-                //progressDialog.dismiss()
-                T.t("Normal packet sent successfully")
-            }
-            else if (packetType.equals("login"))
-            {
-                T.e("PACKET_SENT : login")
-                //progressDialog.dismiss()
-                T.t("Login packet sent successfully")
-            }
-            else if (packetType.equals("alarm"))
-            {
-                T.e("PACKET_SENT : alarm")
-                //progressDialog.dismiss()
-                T.t("Alarm packet sent successfully")
-            }
-            else if (packetType.equals("health"))
-            {
-                T.e("PACKET_SENT : health")
-                //progressDialog.dismiss()
-                T.t("Health packet sent successfully")
-            }
-            else if (packetType.equals("emergency"))
-            {
-                T.e("PACKET_SENT : emergency")
-                //progressDialog.dismiss()
-                T.t("Emergency packet sent successfully")
-            }
-            else
-            {
-                T.e("PACKET_SENT : "+packetType)
-                //progressDialog.dismiss()
-                T.t(packetType)
             }
 
-
-        }
-
-
+        }, this,packetTypeFlag, server_address, server_port, message).execute()
     }
-
-    fun fifteenMinDelayHere()
-    {
+    fun fifteenMinDelayHere() {
         val mRunnable: Runnable
         val mHandler = Handler()
         mRunnable = Runnable {
             // TODO Auto-generated method stub
             //then send normal packet
             //T.e("HANDLER_CALL : "+"Time delay")
-            if(radioButton_login.isChecked){
-                packetType = "login"
+            if (radioButton_login.isChecked) {
+                packetTypeSelection = "login"
+            } else if (radioButton_normal.isChecked) {
+                packetTypeSelection = "normal"
+            } else if (radioButton_alarm.isChecked) {
+                packetTypeSelection = "alarm"
             }
-            else if(radioButton_normal.isChecked){
-                packetType = "normal"
-
-            }
-            else if(radioButton_alarm.isChecked){
-                packetType = "alarm"
-            }
-
             startNormalPacketHandler()
         }
         mHandler.postDelayed(mRunnable, 15000)//15 sec
@@ -748,10 +651,6 @@ class MainActivity : AppCompatActivity(),
 
 
     private fun changeMap(latitude: Double, longitude: Double) {
-
-
-        Log.e("LOG", "latitude : " + latitude)
-        Log.e("LOG", "longitude : " + longitude)
 
         if (ActivityCompat.checkSelfPermission(
                 this,
