@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.CompoundButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import com.example.packetsender.R
@@ -63,7 +64,10 @@ class MainActivity : AppCompatActivity(),
         var START_STOP_CNT: Int = 0
         var message = ""
         var imei = ""
-        // var packetType = ""
+        var NORMAL_PACKET_DELAY : Long = 10000
+        //default 1
+        //if 0 send normal packet after 1 min
+        var toggleIgnCon = ""
         var packetTypeSelection = ""
         //var conditionType = ""
         //lateinit var progressDialog: ProgressDialog
@@ -244,7 +248,7 @@ class MainActivity : AppCompatActivity(),
             }
             T.e("HANDLER_CALL : " + packetTypeSelection + " handler running...")
             sendDataToServer(packetTypeSelection)
-            mHandlerNormalPacket.postDelayed(this, Constants.NORMAL_PACKET_DELAY)//10 sec
+            mHandlerNormalPacket.postDelayed(this, NORMAL_PACKET_DELAY)//10 sec
         }
     }
 
@@ -362,6 +366,7 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         })
+        //check packet type is normal then show ign_switch else hide it
         packetTypeSelection = "normal"
         //conditionType = "TA,16,L"
         radioGroup.setOnCheckedChangeListener(object : RadioGroup.OnCheckedChangeListener {
@@ -369,15 +374,15 @@ class MainActivity : AppCompatActivity(),
 
                 if (R.id.radioButton_login == checkedId) {
                     condition_type_edt.setText("TA,16,L")
-                    //conditionType = "TA,16,L"
+                    ign_switch.visibility = View.GONE
                     packetTypeSelection = "login"
                 } else if (R.id.radioButton_normal == checkedId) {
                     condition_type_edt.setText("TA,16,L")
-                    //conditionType = "TA,16,L"
+                    ign_switch.visibility = View.VISIBLE
                     packetTypeSelection = "normal"
                 } else if (R.id.radioButton_alarm == checkedId) {
                     condition_type_edt.setText("IN,07,L")
-                    //conditionType = "IN,07,L"
+                    ign_switch.visibility = View.VISIBLE
                     packetTypeSelection = "alarm"
                 }
             }
@@ -396,6 +401,45 @@ class MainActivity : AppCompatActivity(),
                     latLongType = "manual"
                     lat_lng_li.setVisibility(View.VISIBLE);
                 }
+            }
+        })
+
+        toggleIgnCon = "1"
+        T.e("toggleIgnCon : "+toggleIgnCon)
+        ign_switch.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+
+                if(isChecked)
+                {
+                    T.t("Ignition ON")
+                    ign_switch.setChecked(true)
+                    toggleIgnCon = "1"
+                    //stop normal packet handler
+                    if(mIsRunningNormalPacket)
+                    {
+                        stopNormalPacketHandler()
+                    }
+                    //set normal packet time delay to 15 sec to 1 min
+                    NORMAL_PACKET_DELAY = 10000
+                    //then start normal packet
+                    startNormalPacketHandler()
+                }
+                else
+                {
+                    T.t("Ignition OFF")
+                    ign_switch.setChecked(false)
+                    toggleIgnCon = "0"
+                    //stop normal packet handler
+                    if(mIsRunningNormalPacket)
+                    {
+                        stopNormalPacketHandler()
+                    }
+                    //set normal packet time delay to 15 sec to 1 min
+                    NORMAL_PACKET_DELAY = 60000
+                    //then start normal packet
+                    startNormalPacketHandler()
+                }
+                T.e("toggleIgnCon : "+toggleIgnCon)
             }
         })
     }
@@ -579,16 +623,15 @@ class MainActivity : AppCompatActivity(),
             } else if (packetTypeFlag.equals("normal"))//normal
             {
                 message =
-                    "$,03," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,010.4,354.90,07,0571.7,01.90,01.00,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,274d,6301,-056,2a27,62fc,-063,36a8,62f8,-066,2a29,62fc,-070,1000,00,000042,9d20b00f,*"
+                    "$,03," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,010.4,354.90,07,0571.7,01.90,01.00,IDEAIN," + toggleIgnCon + ",1,00.0,4.4,1,C,31,404,78,62fc,2a28,274d,6301,-056,2a27,62fc,-063,36a8,62f8,-066,2a29,62fc,-070,1000,00,000042,9d20b00f,*"
             } else if (packetTypeFlag.equals("health"))//health
             {
                 message = "$,02," + vendor_id + ",0.0.1," + imei + ",100,30,00.0,00005,00600,0000,00,00.2,00.0,*"
             } else if (packetTypeFlag.equals("alarm"))//alarm
             {
                 message =
-                    "$,04," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,000.4,000.00,07,0570.4,02.00,01.10,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,2a27,62fc,-059,2a29,62fc,-064,2851,62f8,-074,274d,6301,-074,1000,01,000034,a236dd7b,*"
+                    "$,04," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,000.4,000.00,07,0570.4,02.00,01.10,IDEAIN," + toggleIgnCon + ",1,00.0,4.4,1,C,31,404,78,62fc,2a28,2a27,62fc,-059,2a29,62fc,-064,2851,62f8,-074,274d,6301,-074,1000,01,000034,a236dd7b,*"
             }
-
             //send normal, alram,login
             sendRequest(packetTypeFlag,server_address!!,server_port,message)
         }

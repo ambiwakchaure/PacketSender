@@ -244,6 +244,17 @@
                                               android:layout_height="wrap_content"
                                               android:id="@+id/condition_type_edt"/>
                                 </android.support.design.widget.TextInputLayout>
+                                <Switch
+                                        android:id="@+id/ign_switch"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Ignition   "
+                                        android:textSize="10pt"
+                                        android:fontFamily="@font/crc55"
+                                        android:layout_marginTop="8pt"
+                                        android:checked="true"
+                                        android:textOff="OFF"
+                                        android:textOn="ON"/>
 
                             </LinearLayout>
                         </android.support.v7.widget.CardView>
