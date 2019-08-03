@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity(),
     private lateinit var mMap: GoogleMap
     val REQUEST_CHECK_STATE = 12300 // any suitable ID
 
+
     companion object {
         //var socket: Socket? = null
         var server_address: String? = null
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity(),
         var imei = ""
         // var packetType = ""
         var packetTypeSelection = ""
-       // var packetTypeForEmergency = ""
+        //var conditionType = ""
         //lateinit var progressDialog: ProgressDialog
         lateinit var context: Context
         lateinit var mHandlerHealthPacket: Handler
@@ -342,8 +343,6 @@ class MainActivity : AppCompatActivity(),
             CNT = 0
             start_btn.setVisibility(View.VISIBLE)
             stop_btn.setVisibility(View.GONE)
-
-
         }
         connect_btn.setOnClickListener {
             if (T.isNetworkAvailable()) {
@@ -362,21 +361,26 @@ class MainActivity : AppCompatActivity(),
                     format_type = "uttarakhand"
                 }
             }
-
         })
         packetTypeSelection = "normal"
+        //conditionType = "TA,16,L"
         radioGroup.setOnCheckedChangeListener(object : RadioGroup.OnCheckedChangeListener {
             override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
 
                 if (R.id.radioButton_login == checkedId) {
+                    condition_type_edt.setText("TA,16,L")
+                    //conditionType = "TA,16,L"
                     packetTypeSelection = "login"
                 } else if (R.id.radioButton_normal == checkedId) {
+                    condition_type_edt.setText("TA,16,L")
+                    //conditionType = "TA,16,L"
                     packetTypeSelection = "normal"
                 } else if (R.id.radioButton_alarm == checkedId) {
+                    condition_type_edt.setText("IN,07,L")
+                    //conditionType = "IN,07,L"
                     packetTypeSelection = "alarm"
                 }
             }
-
         })
         latLongType = "NA"
         radioGroup_latlng.setOnCheckedChangeListener(object : RadioGroup.OnCheckedChangeListener {
@@ -395,7 +399,6 @@ class MainActivity : AppCompatActivity(),
             }
         })
     }
-
     private fun validateFields(packetTypeFlag: String) {
 
         //check format types empty
@@ -412,6 +415,9 @@ class MainActivity : AppCompatActivity(),
             return
         }
         if (!T.validateEditext(main_layout, imei_edt, "Enter IMEI")) {
+            return
+        }
+        if (!T.validateEditext(main_layout, condition_type_edt, "Enter condition type")) {
             return
         }
         //check lat lng types empty
@@ -444,7 +450,6 @@ class MainActivity : AppCompatActivity(),
             checkIfPacketEmergency(packetTypeFlag)
         }
     }
-
     fun checkIfPacketEmergency(packetTypeFlag: String) {
 
         if (packetTypeFlag.equals("emergency"))
@@ -473,11 +478,9 @@ class MainActivity : AppCompatActivity(),
         }
         else
         {
-
             emergency_btn.setText("Start Emergency")
             emergency_btn.setBackgroundColor(Color.parseColor("#339933"))
             EMERGENCY_CNT = 0
-
             CNT = 0
             //packetTypeForEmergency = ""
             start_btn.setVisibility(View.GONE)
@@ -576,14 +579,14 @@ class MainActivity : AppCompatActivity(),
             } else if (packetTypeFlag.equals("normal"))//normal
             {
                 message =
-                    "$,03," + vendor_id + ",0.0.1,TA,16,L," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,010.4,354.90,07,0571.7,01.90,01.00,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,274d,6301,-056,2a27,62fc,-063,36a8,62f8,-066,2a29,62fc,-070,1000,00,000042,9d20b00f,*"
+                    "$,03," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,010.4,354.90,07,0571.7,01.90,01.00,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,274d,6301,-056,2a27,62fc,-063,36a8,62f8,-066,2a29,62fc,-070,1000,00,000042,9d20b00f,*"
             } else if (packetTypeFlag.equals("health"))//health
             {
                 message = "$,02," + vendor_id + ",0.0.1," + imei + ",100,30,00.0,00005,00600,0000,00,00.2,00.0,*"
             } else if (packetTypeFlag.equals("alarm"))//alarm
             {
                 message =
-                    "$,04," + vendor_id + ",0.0.1,IN,07,L," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,000.4,000.00,07,0570.4,02.00,01.10,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,2a27,62fc,-059,2a29,62fc,-064,2851,62f8,-074,274d,6301,-074,1000,01,000034,a236dd7b,*"
+                    "$,04," + vendor_id + ",0.0.1,"+condition_type_edt.text.toString()+"," + imei + ",MH12AB1234,1," + dateTimeString + ",0" + lat + ",N,0" + lng + ",E,000.4,000.00,07,0570.4,02.00,01.10,IDEAIN,1,1,00.0,4.4,1,C,31,404,78,62fc,2a28,2a27,62fc,-059,2a29,62fc,-064,2851,62f8,-074,274d,6301,-074,1000,01,000034,a236dd7b,*"
             }
 
             //send normal, alram,login
